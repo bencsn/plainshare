@@ -2,9 +2,8 @@ use clap::{Parser, Subcommand};
 mod builder;
 mod project;
 mod utils;
-use rocket::fairing::AdHoc;
 use rocket::response::content::RawHtml;
-use rocket::{get, routes, Request};
+use rocket::{get, routes, State};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -32,6 +31,10 @@ enum Commands {
         #[clap(value_parser)]
         project_name: String,
     },
+}
+
+struct ProjectInfo {
+    project_path: String,
 }
 
 #[rocket::main]
@@ -72,6 +75,9 @@ async fn main() -> Result<(), rocket::Error> {
 
             println!("👀 Real paths: {:?}", paths_excluding_build_path);
             let mut _rocket = rocket::build()
+                .manage(ProjectInfo {
+                    project_path: project_path_str,
+                })
                 .mount("/", routes![index, page])
                 .launch()
                 .await?;
@@ -82,9 +88,14 @@ async fn main() -> Result<(), rocket::Error> {
 }
 
 #[get("/<name>")]
-fn page(name: &str) -> RawHtml<std::string::String> {
+fn page(name: &str, state: &State<ProjectInfo>) -> RawHtml<std::string::String> {
     println!("👀 Serving: {}", name);
-    let build_path = "testprojct/build";
+    let project_path = &state.project_path;
+    if project_path.is_empty() {
+        println!("No project path found");
+        return RawHtml("500".to_string());
+    }
+    let build_path = format!("{}/build", project_path);
     let html_file_path = format!("{}/{}.html", build_path, name);
     let index = std::fs::read_to_string(&html_file_path).unwrap_or_default();
     if index.is_empty() {
@@ -104,8 +115,13 @@ fn page(name: &str) -> RawHtml<std::string::String> {
 }
 
 #[get("/")]
-fn index() -> RawHtml<std::string::String> {
-    let build_path = "testprojct/build";
+fn index(state: &State<ProjectInfo>) -> RawHtml<std::string::String> {
+    let project_path = &state.project_path;
+    if project_path.is_empty() {
+        println!("No project path found");
+        return RawHtml("500".to_string());
+    }
+    let build_path = format!("{}/build", project_path);
     let index_path = format!("{}/index.html", build_path);
     let index = std::fs::read_to_string(&index_path).unwrap_or_default();
     if index.is_empty() {

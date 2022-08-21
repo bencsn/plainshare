@@ -1,0 +1,4 @@
+
+name = "testprod"
+description = "scacs"
+build_target = "build"
