@@ -1,0 +1,4 @@
+
+name = "testprojct"
+description = "testproject"
+build_target = "build"
