@@ -1,4 +1,4 @@
-# Generate a fully functioning static web server serving Markdown files
+# Create a simple website from markdown files
 
 This is a simple static web server that serves Markdown files.
 
