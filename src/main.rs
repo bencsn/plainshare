@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 mod builder;
-mod project;
+mod generator;
 mod utils;
 use rocket::response::content::RawHtml;
 use rocket::{get, routes, State};
@@ -43,7 +43,7 @@ async fn main() -> Result<(), rocket::Error> {
 
     match cli.commands {
         Commands::New { project_name } => {
-            project::new(project_name);
+            generator::new(project_name);
         }
         Commands::Build { project_path } => {
             let current_dir = std::env::current_dir().unwrap();
