@@ -14,8 +14,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Start a development server
-    Dev {
+    /// Start a server
+    Start {
         #[clap(value_parser)]
         project_path: Option<String>,
     },
@@ -46,11 +46,15 @@ async fn main() -> Result<(), rocket::Error> {
             project::new(project_name);
         }
         Commands::Build { project_path } => {
-            let valid_paths = builder::build(project_path.unwrap_or('.'.to_string()));
+            let current_dir = std::env::current_dir().unwrap();
+            let current_dir_string = current_dir.to_str().unwrap().to_string();
+            let valid_paths = builder::build(project_path.unwrap_or(current_dir_string));
             println!("👀 Valid paths: {:?}", valid_paths);
         }
-        Commands::Dev { project_path } => {
-            let project_path_str = project_path.unwrap_or('.'.to_string());
+        Commands::Start { project_path } => {
+            let current_dir = std::env::current_dir().unwrap();
+            let current_dir_string = current_dir.to_str().unwrap().to_string();
+            let project_path_str = project_path.unwrap_or(current_dir_string);
             let valid_paths_including_build_path = builder::build(project_path_str.to_owned());
             // TODO: Start a dev server
             println!(
