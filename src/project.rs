@@ -1,6 +1,3 @@
-use fs_extra::copy_items;
-use fs_extra::dir::CopyOptions;
-
 pub fn new(project_name: String) {
     println!("Creating new project: {}", project_name);
     // create a new project directory
@@ -13,8 +10,7 @@ pub fn new(project_name: String) {
     let project_description = prompt_for_project_description();
     create_new_project_directory(&project_name);
 
-    // copy the default template to the project directory
-    copy_default_template(&project_name);
+    create_routes_directory(&project_name);
 
     // create a toml file called _config.toml
     create_config_file(&project_name, &project_description);
@@ -71,15 +67,44 @@ build_target = "build"
         .expect("🙅‍♂️ Failed to write to config file.");
 }
 
-fn copy_default_template(project_name: &String) {
-    let options = CopyOptions::new(); //Initialize default values for CopyOptions
-    // copy dir1 and file1.txt to target/dir1 and target/file1.txt
-    let mut from_paths = Vec::new();
-    from_paths.push("src/default_template");
-    copy_items(&from_paths, &project_name, &options)
-        .expect("🙅‍♂️ Failed to copy default template.");
-    // rename the default_template to src
-    let src_dir = std::path::Path::new(&project_name).join("default_template");
-    let dest_dir = std::path::Path::new(&project_name).join("src");
-    std::fs::rename(src_dir, dest_dir).expect("🙅‍♂️ Failed to rename default_template to src.");
+// TODO: create files from here instead
+fn create_routes_directory(project_name: &String) {
+    let project_dir = std::path::Path::new(&project_name);
+    // create a routes directory
+    let routes_dir = project_dir.join("routes");
+    std::fs::create_dir(&routes_dir).expect("🙅‍♂️ Failed to create routes directory.");
+
+    // add index.md to routes directory
+    let index_file_path = routes_dir.join("index.md");
+    let mut index_file =
+        std::fs::File::create(index_file_path).expect("🙅‍♂️ Failed to create index file.");
+
+    let index_file_contents = r#"
+---
+title: "Hello World"
+---
+# Hello World
+This is a home page.
+
+[Next page](/second-page)
+    "#;
+    std::io::Write::write_all(&mut index_file, index_file_contents.as_bytes())
+        .expect("🙅‍♂️ Failed to write to index file.");
+
+    // add second-page.md to routes directory
+    let second_page_file_path = routes_dir.join("second-page.md");
+    let mut second_page_file = std::fs::File::create(second_page_file_path)
+        .expect("🙅‍♂️ Failed to create second page file.");
+
+    let second_page_file_contents = r#"
+---
+title: "Second Page"
+---
+# Second Page
+This is a second page.
+
+[Home page](/)
+    "#;
+    std::io::Write::write_all(&mut second_page_file, second_page_file_contents.as_bytes())
+        .expect("🙅‍♂️ Failed to write to second page file.");
 }

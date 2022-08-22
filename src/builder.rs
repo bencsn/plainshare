@@ -31,7 +31,7 @@ pub fn build(project_path: String) -> Vec<std::string::String> {
     }
 
     let build_path = project_path.to_owned() + "/" + &content.build_target;
-    let routes_path = project_path.to_owned() + "/src/routes";
+    let routes_path = project_path.to_owned() + "/routes";
 
     // create a directory build_path
     // if build directory already exists, delete it
