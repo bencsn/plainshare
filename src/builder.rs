@@ -1,5 +1,6 @@
 use markdown::to_html;
 use serde::Deserialize;
+use colored::Colorize;
 
 use crate::utils;
 
@@ -15,19 +16,19 @@ fn read_config(toml_path: &String) -> std::io::Result<Config> {
 
 /// Returns a vector of all valid route paths
 pub fn build(project_path: String) -> Vec<std::string::String> {
-    println!("Building project");
+    println!("{}",format!("Building project: {}", &project_path).italic().purple());
     let config_path = project_path.to_owned() + "/_config.toml";
     // read _config.toml file
     let content = match read_config(&config_path) {
         Ok(content) => content,
         Err(error) => {
-            panic!("🙅‍♂️ Failed to read _config.toml file: {}", error);
+            panic!("{}", format!("🙅‍♂️ Failed to read _config.toml file: {}", error).red());
         }
     };
 
     println!("Build target: {}", content.build_target);
     if content.build_target.is_empty() {
-        panic!("🙅‍♂️ Build target not specified in _config.toml");
+        panic!("{}", format!("🙅‍♂️ Build target not specified in _config.toml").red());
     }
 
     let build_path = project_path.to_owned() + "/" + &content.build_target;
@@ -51,7 +52,7 @@ pub fn build(project_path: String) -> Vec<std::string::String> {
         }
     };
 
-    print!("👀 Visited paths: {:?}", visited_paths);
+    print!("👀 Included pages: {:?}", visited_paths);
 
     let mut valid_route_strings: Vec<String> = Vec::new();
     for route_string in visited_paths {
@@ -64,19 +65,15 @@ pub fn build(project_path: String) -> Vec<std::string::String> {
                     panic!("🙅‍♂️ Failed to read route content: {}", error);
                 }
             };
-            println!("Route: {:?}", route_content);
             let html_result = to_html(&route_content);
-            println!("HTML: {:?}", html_result);
             let html_path_string = route_string
                 .replace(&routes_path, &build_path)
                 .replace(".md", ".html");
             let html_path = std::path::Path::new(&html_path_string);
-            println!("HTML path: {:?}", html_path_string);
             std::fs::create_dir_all(html_path.clone().parent().unwrap())
                 .expect("🙅‍♂️ Failed to create directory for HTML file.");
             match std::fs::write(&html_path_string, html_result) {
                 Ok(_) => {
-                    println!("👍 HTML file written");
                     valid_route_strings.push(html_path_string);
                 }
                 Err(error) => {

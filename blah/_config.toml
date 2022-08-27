@@ -1,0 +1,4 @@
+
+name = "blah"
+description = "A PlainShare project"
+build_target = "build"

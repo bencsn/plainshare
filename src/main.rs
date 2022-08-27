@@ -2,6 +2,9 @@ use clap::{Parser, Subcommand};
 mod builder;
 mod generator;
 mod utils;
+
+use colored::Colorize;
+use rocket::log::private::info;
 use rocket::response::content::RawHtml;
 use rocket::{get, routes, State};
 
@@ -48,19 +51,14 @@ async fn main() -> Result<(), rocket::Error> {
         Commands::Build { project_path } => {
             let current_dir = std::env::current_dir().unwrap();
             let current_dir_string = current_dir.to_str().unwrap().to_string();
-            let valid_paths = builder::build(project_path.unwrap_or(current_dir_string));
-            println!("👀 Valid paths: {:?}", valid_paths);
+            let _valid_paths = builder::build(project_path.unwrap_or(current_dir_string));
         }
         Commands::Start { project_path } => {
+            info!("{}", format!("🚀 Starting server...").purple());
             let current_dir = std::env::current_dir().unwrap();
             let current_dir_string = current_dir.to_str().unwrap().to_string();
             let project_path_str = project_path.unwrap_or(current_dir_string);
             let valid_paths_including_build_path = builder::build(project_path_str.to_owned());
-            // TODO: Start a dev server
-            println!(
-                "Preparing to start development server... {:?}",
-                valid_paths_including_build_path
-            );
 
             // extract real paths from valid_paths, excluding anything before /build/
             let mut paths_excluding_build_path: Vec<String> = Vec::new();
@@ -77,7 +75,6 @@ async fn main() -> Result<(), rocket::Error> {
                 paths_excluding_build_path.push(real_path);
             }
 
-            println!("👀 Real paths: {:?}", paths_excluding_build_path);
             let mut _rocket = rocket::build()
                 .manage(ProjectInfo {
                     project_path: project_path_str,

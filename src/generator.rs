@@ -1,9 +1,14 @@
+use colored::Colorize;
+
 pub fn new(project_name: String) {
-    println!("Creating new project: {}", project_name);
+    println!(
+        "{}",
+        format!("🔨 Creating a new project at: {}", project_name).purple().italic()
+    );
     // create a new project directory
     let is_project_name_valid = is_project_name_valid(&project_name);
     if !is_project_name_valid.0 {
-        println!("{}", is_project_name_valid.1);
+        println!("{}", format!("{}",is_project_name_valid.1).red());
         return;
     }
     // Prompt user for project description
@@ -15,10 +20,12 @@ pub fn new(project_name: String) {
     // create a toml file called _config.toml
     create_config_file(&project_name, &project_description);
 
-    println!("🚀🚀 Project created successfully! 🚀🚀");
+    println!("{}",format!("🚀🚀 Project created successfully! 🚀🚀").green().bold());
+    println!();
+    println!("{}", format!("👉 To start the server, run: ").bold().italic());
     println!("Run `cd {}` to enter the project directory", project_name);
     println!("Run `plainshare build .` to build the project");
-    println!("Run `plainshare dev .` to start the development server");
+    println!("Run `plainshare start .` to start the development server");
 }
 
 fn is_project_name_valid(project_name: &String) -> (bool, String) {
@@ -35,14 +42,18 @@ fn is_project_name_valid(project_name: &String) -> (bool, String) {
 
 fn prompt_for_project_description() -> String {
     let mut project_description = String::new();
-    println!("📝 Enter a description for your project:");
+    println!("📝 Enter a description for your project {}:", format!("(default: A PlainShare project)").italic().yellow());
     std::io::stdin()
         .read_line(&mut project_description)
         .expect("Failed to read line");
     // escape quotes including single quotes
     project_description = project_description.replace("\"", "\\\"");
     // escape new lines
-    project_description = project_description.replace("\n", "");
+    project_description = project_description.trim_end().to_string();
+
+    if project_description.is_empty() {
+        project_description = "A PlainShare project".to_string();
+    }
     return project_description;
 }
 

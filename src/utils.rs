@@ -13,7 +13,6 @@ pub fn visit_dirs(
             if path.is_dir() {
                 visit_dirs(&path, visited_paths)?;
             } else {
-                println!("Visiting.... {:?}", path); 
                 visited_paths.push(path.to_str().unwrap().to_string());
             }
         }
